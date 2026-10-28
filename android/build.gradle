@@ -1,4 +1,4 @@
-ext.Alert = [
+ext.RNAlert = [
   minSdkVersion: 24,
   compileSdkVersion: 36
 ]
@@ -8,7 +8,7 @@ ext.getExtOrDefault = { prop ->
     return rootProject.ext.get(prop)
   }
 
-  return Alert[prop]
+  return RNAlert[prop]
 }
 
 
@@ -22,7 +22,7 @@ if (project.extensions.findByName("kotlin") == null) {
 apply plugin: "com.facebook.react"
 
 android {
-  namespace "com.alert"
+  namespace "com.rnalert"
 
   compileSdkVersion getExtOrDefault("compileSdkVersion")
 
@@ -33,4 +33,5 @@ android {
 
 dependencies {
   implementation "com.facebook.react:react-android"
+  implementation "com.google.android.material:material:1.13.0"
 }

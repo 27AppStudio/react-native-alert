@@ -1,5 +1,5 @@
 {
-  "name": "react-native-alert",
+  "name": "@27appstudio/react-native-alert",
   "version": "0.1.0",
   "description": "Native alerts and text prompts for React Native in your app's tint: UIAlertController on iOS, Material 3 dialogs on Android.",
   "main": "./lib/module/index.js",
@@ -36,12 +36,20 @@
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
     "typecheck": "tsc",
-    "lint": "eslint \"**/*.{js,ts,tsx}\""
+    "lint": "eslint \"**/*.{js,ts,tsx}\"",
+    "release": "release-it --only-version"
   },
   "keywords": [
     "react-native",
     "ios",
-    "android"
+    "android",
+    "alert",
+    "prompt",
+    "dialog",
+    "material3",
+    "uialertcontroller",
+    "tint",
+    "turbo-module"
   ],
   "repository": {
     "type": "git",
@@ -54,7 +62,8 @@
   },
   "homepage": "https://github.com/27AppStudio/react-native-alert#readme",
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "devDependencies": {
     "@eslint/compat": "^2.1.1",
@@ -62,6 +71,7 @@
     "@eslint/js": "^9.39.5",
     "@react-native/babel-preset": "0.84.1",
     "@react-native/eslint-config": "0.84.1",
+    "@release-it/conventional-changelog": "^12.0.2",
     "@types/react": "^19.2.0",
     "del-cli": "^8.0.1",
     "eslint": "^9.39.5",
@@ -72,12 +82,13 @@
     "react": "19.2.3",
     "react-native": "0.84.1",
     "react-native-builder-bob": "^0.44.1",
+    "release-it": "^21.1.1",
     "turbo": "^2.11.10",
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": ">=0.82"
   },
   "workspaces": [
     "example"
@@ -102,11 +113,16 @@
     ]
   },
   "codegenConfig": {
-    "name": "AlertSpec",
+    "name": "RNAlertSpec",
     "type": "modules",
     "jsSrcsDir": "src",
+    "ios": {
+      "modulesProvider": {
+        "RNAlert": "RNAlert"
+      }
+    },
     "android": {
-      "javaPackageName": "com.alert"
+      "javaPackageName": "com.rnalert"
     }
   },
   "prettier": {
@@ -116,12 +132,24 @@
     "trailingComma": "es5",
     "useTabs": false
   },
-  "create-react-native-library": {
-    "type": "turbo-module",
-    "languages": "kotlin-objc",
-    "tools": [
-      "eslint"
-    ],
-    "version": "0.64.0"
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release ${version}",
+      "tagName": "v${version}"
+    },
+    "npm": {
+      "publish": true
+    },
+    "github": {
+      "release": true
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "preset": {
+          "name": "angular"
+        },
+        "infile": "CHANGELOG.md"
+      }
+    }
   }
 }

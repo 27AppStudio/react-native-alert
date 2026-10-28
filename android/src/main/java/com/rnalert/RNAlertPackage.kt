@@ -1,4 +1,4 @@
-package com.alert
+package com.rnalert
 
 import com.facebook.react.BaseReactPackage
 import com.facebook.react.bridge.NativeModule
@@ -6,10 +6,10 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.model.ReactModuleInfo
 import com.facebook.react.module.model.ReactModuleInfoProvider
 
-class AlertPackage : BaseReactPackage() {
+class RNAlertPackage : BaseReactPackage() {
   override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? {
-    return if (name == AlertModule.NAME) {
-      AlertModule(reactContext)
+    return if (name == RNAlertModule.NAME) {
+      RNAlertModule(reactContext)
     } else {
       null
     }
@@ -17,9 +17,9 @@ class AlertPackage : BaseReactPackage() {
 
   override fun getReactModuleInfoProvider() = ReactModuleInfoProvider {
     mapOf(
-      AlertModule.NAME to ReactModuleInfo(
-        name = AlertModule.NAME,
-        className = AlertModule.NAME,
+      RNAlertModule.NAME to ReactModuleInfo(
+        name = RNAlertModule.NAME,
+        className = RNAlertModule.NAME,
         canOverrideExistingModule = false,
         needsEagerInit = false,
         isCxxModule = false,

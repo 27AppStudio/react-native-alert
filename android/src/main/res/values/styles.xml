@@ -1,0 +1,8 @@
+<resources>
+
+    <!-- The theme alerts are built with, over the activity. Apps restyle the dialog
+         surface and text by redefining this style in their own styles.xml. Button
+         colors come from JS. -->
+    <style name="Theme.RNAlert" parent="Theme.Material3.DayNight.NoActionBar" />
+
+</resources>
