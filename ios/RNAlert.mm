@@ -21,6 +21,55 @@
 
 @end
 
+/**
+ * An alert shown in a window of its own, above the app's, like React Native's `Alert`.
+ * Presented from the app's top view controller instead, an alert raised while that
+ * controller is being dismissed (a form closing on submit, then reporting the failure)
+ * went down with it a moment later, without any button pressed.
+ */
+@interface RNAlertController : UIAlertController
+/** Runs once the alert is gone, after the handler of the action that closed it, if any. */
+@property (nonatomic, copy, nullable) void (^onGone)(void);
+@end
+
+@implementation RNAlertController {
+  UIWindow *_window;
+  __weak UIWindow *_appWindow;
+}
+
+- (void)show
+{
+  UIWindow *appWindow = RCTKeyWindow();
+  _appWindow = appWindow;
+  _window = [[UIWindow alloc] initWithWindowScene:appWindow.windowScene];
+  _window.windowLevel = UIWindowLevelAlert + 1;
+  // What the alert used to inherit from the app's window: its tint and its forced style.
+  _window.tintColor = appWindow.tintColor;
+  _window.overrideUserInterfaceStyle = appWindow.overrideUserInterfaceStyle;
+  UIViewController *host = [UIViewController new];
+  host.view.backgroundColor = UIColor.clearColor;
+  _window.rootViewController = host;
+  [_window makeKeyAndVisible];
+  [host presentViewController:self animated:YES completion:nil];
+}
+
+- (void)viewDidDisappear:(BOOL)animated
+{
+  [super viewDidDisappear:animated];
+  _window.hidden = YES;
+  _window = nil;
+  [_appWindow makeKeyWindow];
+  void (^onGone)(void) = self.onGone;
+  self.onGone = nil;
+  if (onGone != nil) {
+    // UIKit runs the pressed action's handler right after this, in the same dismissal:
+    // deferred, onGone sees whether a button settled the alert.
+    dispatch_async(dispatch_get_main_queue(), onGone);
+  }
+}
+
+@end
+
 @implementation RNAlert
 
 + (NSString *)moduleName
@@ -70,19 +119,19 @@ static UITextAutocapitalizationType Autocapitalization(NSString *value)
 }
 
 /** An alert in the given tint and style, or nil (rejected) when nothing can present it. */
-static UIAlertController *MakeAlert(
+static RNAlertController *MakeAlert(
     NSString *title,
     NSString *message,
     std::optional<double> tintColor,
     NSString *userInterfaceStyle,
     RCTPromiseRejectBlock reject)
 {
-  if (RCTPresentedViewController() == nil) {
-    reject(@"E_NO_PRESENTER", @"No view controller to present the alert on", nil);
+  if (RCTKeyWindow().windowScene == nil) {
+    reject(@"E_NO_PRESENTER", @"No window scene to present the alert in", nil);
     return nil;
   }
-  UIAlertController *alert =
-      [UIAlertController alertControllerWithTitle:title
+  RNAlertController *alert =
+      [RNAlertController alertControllerWithTitle:title
                                           message:message
                                    preferredStyle:UIAlertControllerStyleAlert];
   if (tintColor.has_value()) {
@@ -101,7 +150,7 @@ static BOOL NeedsDarkPreferredLabel(UIAlertController *alert)
 {
   if (@available(iOS 26, *)) {
     UITraitCollection *traits = alert.overrideUserInterfaceStyle == UIUserInterfaceStyleUnspecified
-        ? RCTPresentedViewController().traitCollection
+        ? RCTKeyWindow().traitCollection
         : [UITraitCollection traitCollectionWithUserInterfaceStyle:alert.overrideUserInterfaceStyle];
     UIColor *tint = [alert.view.tintColor resolvedColorWithTraitCollection:traits];
     CGFloat red = 0, green = 0, blue = 0, alpha = 0;
@@ -138,11 +187,24 @@ static UIAlertActionStyle ActionStyle(NSString *style)
       resolve:(RCTPromiseResolveBlock)resolve
        reject:(RCTPromiseRejectBlock)reject
 {
-  UIAlertController *alert = MakeAlert(
+  RNAlertController *alert = MakeAlert(
       options.title(), options.message(), options.tintColor(), options.userInterfaceStyle(), reject);
   if (alert == nil) {
     return;
   }
+
+  // Exactly once: by the pressed button, or as dismissed (-1) if the alert went away
+  // without one. Left pending, the JS queue would hold every later alert back.
+  __block BOOL settled = NO;
+  void (^settle)(NSInteger) = ^(NSInteger index) {
+    if (!settled) {
+      settled = YES;
+      resolve(@(index));
+    }
+  };
+  alert.onGone = ^{
+    settle(-1);
+  };
 
   // UIAlertController allows one cancel action: like RN, later ones become default.
   BOOL hasCancel = NO;
@@ -159,7 +221,7 @@ static UIAlertActionStyle ActionStyle(NSString *style)
     UIAlertAction *action = [UIAlertAction actionWithTitle:button.text()
                                                      style:style
                                                    handler:^(UIAlertAction *a) {
-                                                     resolve(@(pressed));
+                                                     settle(pressed);
                                                    }];
     [alert addAction:action];
     if (button.isPreferred()) {
@@ -170,14 +232,14 @@ static UIAlertActionStyle ActionStyle(NSString *style)
   if (alert.preferredAction != nil && NeedsDarkPreferredLabel(alert)) {
     UpdatePreferredLabel(alert.preferredAction);
   }
-  [RCTPresentedViewController() presentViewController:alert animated:YES completion:nil];
+  [alert show];
 }
 
 - (void)prompt:(JS::NativeRNAlert::PromptOptions &)options
        resolve:(RCTPromiseResolveBlock)resolve
         reject:(RCTPromiseRejectBlock)reject
 {
-  UIAlertController *alert = MakeAlert(
+  RNAlertController *alert = MakeAlert(
       options.title(), options.message(), options.tintColor(), options.userInterfaceStyle(), reject);
   if (alert == nil) {
     return;
@@ -200,6 +262,10 @@ static UIAlertActionStyle ActionStyle(NSString *style)
       settled = YES;
       resolve(@{@"confirmed" : @(confirmed), @"text" : weakField.text ?: @""});
     }
+  };
+  // Gone without Cancel or Confirm: settle as cancelled rather than hold the queue.
+  alert.onGone = ^{
+    settle(NO);
   };
   [alert addAction:[UIAlertAction actionWithTitle:options.cancelText()
                                             style:UIAlertActionStyleCancel
@@ -245,7 +311,7 @@ static UIAlertActionStyle ActionStyle(NSString *style)
   objc_setAssociatedObject(
       alert, @selector(textFieldShouldReturn:), fieldDelegate, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 
-  [RCTPresentedViewController() presentViewController:alert animated:YES completion:nil];
+  [alert show];
 }
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
