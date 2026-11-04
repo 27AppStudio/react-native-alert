@@ -91,3 +91,13 @@ When you're sending a pull request:
 - Review the documentation to make sure it looks good.
 - Follow the pull request template when opening a pull request.
 - For pull requests that change the API or implementation, discuss with maintainers first by opening an issue.
+
+### Publishing to npm
+
+Releases are cut by maintainers. From an up-to-date `main`:
+
+```sh
+yarn release
+```
+
+[release-it](https://github.com/release-it/release-it) bumps the version from the conventional commits, updates `CHANGELOG.md`, then commits, tags (`vX.Y.Z`) and pushes. The tag triggers the `Publish` workflow, which publishes the package to npm through [trusted publishing](https://docs.npmjs.com/trusted-publishers) (with provenance) and creates the GitHub release from the matching `CHANGELOG.md` section. No npm token is stored in the repository.
