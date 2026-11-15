@@ -1,18 +1,30 @@
-# @27appstudio/react-native-alert
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/wordmark-on-dark.svg">
+    <img src="docs/images/wordmark.svg" width="347" alt="@27appstudio/react-native-alert">
+  </picture>
+</h1>
+
+<p>
+  <a href="https://www.npmjs.com/package/@27appstudio/react-native-alert"><img src="https://img.shields.io/npm/v/@27appstudio/react-native-alert?label=npm&labelColor=0B0B0F&color=3340FF" alt="npm version"></a>
+  <a href="https://github.com/27AppStudio/react-native-alert/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/27AppStudio/react-native-alert/ci.yml?branch=main&label=ci&labelColor=0B0B0F" alt="CI status"></a>
+  <a href="#installation"><img src="https://img.shields.io/badge/platforms-iOS%20%7C%20Android-3340FF?labelColor=0B0B0F" alt="Platforms: iOS and Android"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-3340FF?labelColor=0B0B0F" alt="MIT license"></a>
+</p>
 
 Native alerts and text prompts for React Native, in your app's colors:
 
 - **iOS**: `UIAlertController`, tinted. React Native's `Alert` always draws its buttons in the system blue. On iOS 26 the preferred button is filled with your tint, and gets a black label when the tint is light, so it stays readable in dark mode.
 - **Android**: Material 3 dialogs (`MaterialAlertDialogBuilder`) instead of React Native's AppCompat ones. Default, cancel and destructive buttons each take their own color. The prompt is an outlined Material 3 text field in your tint.
 
-| | iOS 26 | iOS 18 | Android |
-|---|---|---|---|
-| `alert` | <img src="docs/images/ios26-alert.png" width="220" alt="iOS 26: Leave the group? alert with a grey Cancel button and a green filled Leave button"> | <img src="docs/images/ios18-alert.png" width="220" alt="iOS 18: Delete this expense? alert with a green Cancel and a red Delete"> | <img src="docs/images/android-alert.png" width="220" alt="Android: Material 3 Leave the group? dialog with Cancel and a green Leave"> |
-| `prompt`, dark mode | <img src="docs/images/ios26-prompt.png" width="220" alt="iOS 26 dark: Rename prompt with a text field and a mint filled Save button with a black label"> | <img src="docs/images/ios18-prompt.png" width="220" alt="iOS 18 dark: Rename prompt with a text field and mint Cancel and Save"> | <img src="docs/images/android-prompt.png" width="220" alt="Android dark: Material 3 Rename dialog with a mint outlined Name field and a mint Save"> |
+|                     | iOS 26                                                                                                                                                   | iOS 18                                                                                                                            | Android                                                                                                                                             |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `alert`             | <img src="docs/images/ios26-alert.png" width="220" alt="iOS 26: Leave the group? alert with a grey Cancel button and a green filled Leave button">       | <img src="docs/images/ios18-alert.png" width="220" alt="iOS 18: Delete this expense? alert with a green Cancel and a red Delete"> | <img src="docs/images/android-alert.png" width="220" alt="Android: Material 3 Leave the group? dialog with Cancel and a green Leave">               |
+| `prompt`, dark mode | <img src="docs/images/ios26-prompt.png" width="220" alt="iOS 26 dark: Rename prompt with a text field and a mint filled Save button with a black label"> | <img src="docs/images/ios18-prompt.png" width="220" alt="iOS 18 dark: Rename prompt with a text field and mint Cancel and Save">  | <img src="docs/images/android-prompt.png" width="220" alt="Android dark: Material 3 Rename dialog with a mint outlined Name field and a mint Save"> |
 
 It's a TurboModule with no views of its own in JS, no Expo modules, and no config plugin.
 
-Made by [27AppStudio](https://github.com/27AppStudio) and used in production in [Splitify](https://splitify.cc).
+Made by [27AppStudio](https://27appstudio.com) and used in production in [Splitify](https://splitify.cc).
 
 ## Installation
 
@@ -67,42 +79,42 @@ Alerts are shown one at a time, in call order. An alert raised while another is 
 
 `buttons` defaults to a single **OK**. Each button has:
 
-| Field | |
-|---|---|
-| `text` | |
-| `onPress` | Called when the button closes the alert. |
-| `style` | `'default'`, `'cancel'` or `'destructive'`. |
+| Field         |                                                                   |
+| ------------- | ----------------------------------------------------------------- |
+| `text`        |                                                                   |
+| `onPress`     | Called when the button closes the alert.                          |
+| `style`       | `'default'`, `'cancel'` or `'destructive'`.                       |
 | `isPreferred` | iOS: the emphasized button. On iOS 26, it's filled with the tint. |
 
 On Android, like React Native, only the last three buttons show: the last one is positive, the one before it negative, and the one before that neutral.
 
 `options`:
 
-| Option | |
-|---|---|
-| `tintColor` | `default` buttons. iOS: every button except destructive ones (iOS 26 draws cancel and other buttons in the label color). |
-| `labelColor` | Android: `cancel` buttons. Defaults to the theme's button color. |
-| `destructiveColor` | Android: `destructive` buttons. Defaults to the theme's `colorError`. iOS always uses its system red. |
-| `cancelable` | Android: whether back or a tap outside dismisses the alert. Defaults to `false`, like React Native. |
-| `onDismiss` | Android: called when the alert is dismissed without a button. |
-| `userInterfaceStyle` | iOS: `'light'`, `'dark'` or `'unspecified'`. |
+| Option               |                                                                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `tintColor`          | `default` buttons. iOS: every button except destructive ones (iOS 26 draws cancel and other buttons in the label color). |
+| `labelColor`         | Android: `cancel` buttons. Defaults to the theme's button color.                                                         |
+| `destructiveColor`   | Android: `destructive` buttons. Defaults to the theme's `colorError`. iOS always uses its system red.                    |
+| `cancelable`         | Android: whether back or a tap outside dismisses the alert. Defaults to `false`, like React Native.                      |
+| `onDismiss`          | Android: called when the alert is dismissed without a button.                                                            |
+| `userInterfaceStyle` | iOS: `'light'`, `'dark'` or `'unspecified'`.                                                                             |
 
 ### `prompt(options): Promise<string | null>`
 
 A one-field text prompt with a cancel and a confirm button. It resolves with the text as typed, or `null` when cancelled. The field is prefilled with `defaultValue` and focused. The confirm button is disabled while the field is blank, and the keyboard's Done key presses it.
 
-| Option | |
-|---|---|
-| `title` | Required. |
-| `message` | |
-| `defaultValue` | Defaults to `''`. |
-| `label` | Android: the field's floating label. |
-| `autoCapitalize` | `'none'`, `'sentences'` (default), `'words'` or `'characters'`. |
-| `cancelText`, `confirmText` | Default to `'Cancel'` and `'OK'`. |
-| `tintColor` | The confirm button and the field (cursor; on Android the outline and label too). |
-| `labelColor` | Android: the cancel button. |
-| `cancelable` | Android: whether back or a tap outside cancels. Defaults to `true`. |
-| `userInterfaceStyle` | iOS, as for `alert`. |
+| Option                      |                                                                                  |
+| --------------------------- | -------------------------------------------------------------------------------- |
+| `title`                     | Required.                                                                        |
+| `message`                   |                                                                                  |
+| `defaultValue`              | Defaults to `''`.                                                                |
+| `label`                     | Android: the field's floating label.                                             |
+| `autoCapitalize`            | `'none'`, `'sentences'` (default), `'words'` or `'characters'`.                  |
+| `cancelText`, `confirmText` | Default to `'Cancel'` and `'OK'`.                                                |
+| `tintColor`                 | The confirm button and the field (cursor; on Android the outline and label too). |
+| `labelColor`                | Android: the cancel button.                                                      |
+| `cancelable`                | Android: whether back or a tap outside cancels. Defaults to `true`.              |
+| `userInterfaceStyle`        | iOS, as for `alert`.                                                             |
 
 On Android, the field has `rn-alert-prompt-input` as its tag, so Detox's `by.id('rn-alert-prompt-input')` finds it.
 
@@ -138,3 +150,25 @@ Button colors still come from JS when you pass them.
 ## License
 
 MIT
+
+## Made by 27AppStudio
+
+<p>
+  <a href="https://27appstudio.com">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/images/27appstudio-on-dark.svg">
+      <img src="docs/images/27appstudio.svg" width="180" alt="27AppStudio">
+    </picture>
+  </a>
+</p>
+
+An independent French mobile app studio. We design, build and launch iPhone and Android apps, and open-source the native pieces we make along the way, most of them for [Splitify](https://splitify.cc).
+
+| Library                                                                                   | What it does                                                           |
+| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [react-native-alert](https://github.com/27AppStudio/react-native-alert)                   | Native alerts and text prompts in your app's colors                    |
+| [react-native-bottom-toolbar](https://github.com/27AppStudio/react-native-bottom-toolbar) | The platform's own bottom toolbar: UIKit on iOS, Material 3 on Android |
+| [react-native-emoji-picker](https://github.com/27AppStudio/react-native-emoji-picker)     | A native emoji picker: iOS popover, Material 3 bottom sheet            |
+| [rn-ship](https://github.com/27AppStudio/rn-ship)                                         | EAS-style release pipeline for bare React Native apps                  |
+
+Need an app built, or a hand with a React Native one? [27appstudio.com](https://27appstudio.com)
