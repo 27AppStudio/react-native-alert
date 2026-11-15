@@ -56,7 +56,7 @@
     "type": "git",
     "url": "git+https://github.com/27AppStudio/react-native-alert.git"
   },
-  "author": "27AppStudio <hello@27appstudio.com> (https://github.com/27AppStudio)",
+  "author": "27AppStudio <hello@27appstudio.com> (https://27appstudio.com)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/27AppStudio/react-native-alert/issues"
