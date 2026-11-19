@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.3](https://github.com/27AppStudio/react-native-alert/compare/v0.1.2...v0.1.3) (2026-11-19)
+
+### Bug Fixes
+
+* **android:** dismiss a replacing alert when the host is destroyed ([7ac7fb1](https://github.com/27AppStudio/react-native-alert/commit/7ac7fb1b76b8b90b26a6c7152063808333cfc7ca))
+
 ## [0.1.2](https://github.com/27AppStudio/react-native-alert/compare/v0.1.1...v0.1.2) (2026-11-15)
 
 ## [0.1.1](https://github.com/27AppStudio/react-native-alert/compare/v0.1.0...v0.1.1) (2026-11-04)
