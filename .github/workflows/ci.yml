@@ -132,14 +132,17 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
+      # Its own key: build-android's cache lacks the test runner's dependencies, and an
+      # exact hit is never re-saved, so every run fetched them from Maven Central.
       - name: Cache Gradle
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             ~/.gradle/wrapper
             ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('example/android/gradle/wrapper/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-test-android-${{ hashFiles('example/android/gradle/wrapper/gradle-wrapper.properties', 'android/build.gradle') }}
           restore-keys: |
+            ${{ runner.os }}-gradle-test-android-
             ${{ runner.os }}-gradle-
 
       - name: Enable KVM
