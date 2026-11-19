@@ -151,8 +151,9 @@ class RNAlertModule(reactContext: ReactApplicationContext) :
       .setTitle(options.getString("title"))
       .setMessage(options.getString("message"))
       .setCancelable(options.getBoolean("cancelable"))
-      .setOnDismissListener {
-        dialog = null
+      .setOnDismissListener { dismissed ->
+        // Posted, so a replaced dialog's listener runs after its successor is shown.
+        if (dialog === dismissed) dialog = null
         onDismiss()
       }
 
