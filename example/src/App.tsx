@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   Button,
+  LogBox,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -10,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { alert, prompt } from '@27appstudio/react-native-alert';
+import { Showcase, type Scene } from './Showcase';
 
 // A dark tint for light mode, a light one for dark mode (iOS 26 gives the filled
 // preferred button a black label there).
@@ -21,6 +23,11 @@ export default function App() {
   const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
   const [tinted, setTinted] = useState(true);
   const [log, setLog] = useState('Open an alert');
+  const [scene, setScene] = useState<Scene | null>(null);
+
+  if (scene) {
+    return <Showcase scene={scene} />;
+  }
 
   const colors = tinted
     ? { tintColor: TINTS[scheme], labelColor: LABELS[scheme] }
@@ -153,6 +160,20 @@ export default function App() {
           alert('Second', undefined, undefined, colors);
         }}
       />
+      {/* The README screenshots, see scripts/screenshots. */}
+      <View style={styles.showcase}>
+        {(['album', 'notes'] as const).map((s) => (
+          <Button
+            key={s}
+            title={`Showcase: ${s}`}
+            testID={`showcase-${s}`}
+            onPress={() => {
+              LogBox.ignoreAllLogs();
+              setScene(s);
+            }}
+          />
+        ))}
+      </View>
     </ScrollView>
   );
 }
@@ -167,6 +188,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: 'center',
   },
+  showcase: { marginTop: 24 },
   row: {
     alignItems: 'center',
     flexDirection: 'row',
