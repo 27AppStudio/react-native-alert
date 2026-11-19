@@ -3,11 +3,10 @@
 
 Usage: frame.py <raw_dir> <out_dir>
 
-<raw_dir>/<platform>-<scene>-<light|dark>.png come from capture.sh. Writes, each in a light
-and a dark version (a darker metal and a soft shadow for light pages, a lighter rim for dark
-ones), on a transparent background:
-  <out_dir>/<platform>-<scene>-<appearance>.png   one framed phone, for the table
-  <out_dir>/hero-<appearance>.png                 HERO's phones side by side, under the intro
+<raw_dir>/<platform>-<scene>-<light|dark>.png come from capture.sh. Writes, on a transparent
+background, with one rim that reads on light and dark pages:
+  <out_dir>/<platform>-<scene>-<appearance>.png   one framed phone per CELLS entry, for the table
+  <out_dir>/hero.png                              HERO's phones side by side, under the intro
 Each page is HTML (CSS frame, camera cutout) rendered by headless Chrome, then pngquant.
 Needs Google Chrome and pngquant.
 """
@@ -20,8 +19,11 @@ from pathlib import Path
 CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 
 # What the README shows: the table's cells, and the hero's phones from left to right.
-CELLS = [f'{p}-{s}' for s in ('album', 'notes') for p in ('ios26', 'ios18', 'android')]
-HERO = ['ios26-album', 'android-notes']
+# Each image is the same for every reader: GitHub swaps <picture> sources by the OS, not by its
+# own theme setting, and npm never swaps. So each slot shows one appearance, and the hero both.
+CELLS = [(f'{p}-album', 'light') for p in ('ios26', 'ios18', 'android')] + \
+        [(f'{p}-notes', 'dark') for p in ('ios26', 'ios18', 'android')]
+HERO = [('ios26-album', 'light'), ('android-notes', 'dark')]
 
 # Frames, as fractions of the phone's width. iPhone: a metal rim, a black bezel, the Dynamic
 # Island (126 x 37 pt, 11 pt from the top of a 402 pt screen). Pixel 9: a satin rim, a thin
@@ -30,14 +32,9 @@ PHONES = {
     'ios': dict(r=0.172, rim=0.0065, bezel=0.019, cutout='island'),
     'android': dict(r=0.118, rim=0.0075, bezel=0.021, cutout='hole'),
 }
-METAL = {
-    'light': 'linear-gradient(135deg,#a9a9ae 0%,#3a3a3e 18%,#141416 50%,#3a3a3e 82%,#8e8e93 100%)',
-    'dark': 'linear-gradient(135deg,#e4e4e8 0%,#8a8a90 18%,#55555a 50%,#8a8a90 82%,#d2d2d7 100%)',
-}
-SHADOW = {
-    'light': '0 {a}px {b}px rgba(11,11,15,.20),0 {c}px {d}px rgba(11,11,15,.10)',
-    'dark': '0 {a}px {b}px rgba(0,0,0,.55),0 {c}px {d}px rgba(0,0,0,.35)',
-}
+# One rim and shadow that read on GitHub's light and dark pages and on npm.
+METAL = 'linear-gradient(135deg,#d1d1d6 0%,#7c7c82 18%,#3a3a3e 50%,#7c7c82 82%,#c7c7cc 100%)'
+SHADOW = '0 {a}px {b}px rgba(0,0,0,.28),0 {c}px {d}px rgba(0,0,0,.16)'
 
 CELL_W = 440          # table cells show at 220 px
 HERO_PHONE_W = 600    # the hero shows at ~880 px, so phones at ~330 px
@@ -69,7 +66,7 @@ def phone(img, platform, appearance, w, left, top):
     sh = round(sw * ih / iw)
     h = sh + 2 * (rim + bezel)
     r = round(w * p['r'])
-    shadow = SHADOW[appearance].format(a=round(w * .05), b=round(w * .11), c=round(w * .012), d=round(w * .03))
+    shadow = SHADOW.format(a=round(w * .05), b=round(w * .11), c=round(w * .012), d=round(w * .03))
     if p['cutout'] == 'island':
         cw, ch = sw * 126 / 402, sw * 37.3 / 402
         cutout = f'<div class="island" style="top:{sw * 11 / 402:.1f}px;width:{cw:.1f}px;height:{ch:.1f}px;border-radius:{ch / 2:.1f}px"></div>'
@@ -77,7 +74,7 @@ def phone(img, platform, appearance, w, left, top):
         d = sw * 0.034
         cutout = f'<div class="hole" style="top:{sh * 0.0215 - d / 2:.1f}px;width:{d:.1f}px;height:{d:.1f}px;border-radius:50%"></div>'
     html = (f'<div class="frame" style="left:{left}px;top:{top}px;width:{w}px;height:{h}px;border-radius:{r}px;'
-            f'padding:{rim}px;background:{METAL[appearance]};box-shadow:{shadow}">'
+            f'padding:{rim}px;background:{METAL};box-shadow:{shadow}">'
             f'<div class="bezel" style="border-radius:{r - rim}px;padding:{bezel}px">'
             f'<div class="screen" style="border-radius:{r - rim - bezel}px"><img src="{img.resolve().as_uri()}">{cutout}</div>'
             f'</div></div>')
@@ -100,27 +97,25 @@ def render(html, png, width, height):
 
 def main(raw, out):
     out.mkdir(parents=True, exist_ok=True)
-    for appearance in ('light', 'dark'):
-        for cell in CELLS:
-            img = raw / f'{cell}-{appearance}.png'
-            if not img.exists():
-                sys.exit(f'missing capture: {img}')
-            pad = round(CELL_W * PAD)
-            html, h = phone(img, cell.split('-')[0], appearance, CELL_W, pad, round(pad * .6))
-            W, H = CELL_W + 2 * pad, h + round(pad * 1.9)
-            render(PAGE.format(W=W, H=H, phones=html), out / f'{cell}-{appearance}.png', W, H)
-        pad = round(HERO_PHONE_W * PAD)
-        parts, heights = [], []
-        for i, shot in enumerate(HERO):
-            img = raw / f'{shot}-{appearance}.png'
-            html, h = phone(img, shot.split('-')[0], appearance, HERO_PHONE_W,
-                            pad + i * (HERO_PHONE_W + HERO_GAP), round(pad * .6))
-            parts.append(html)
-            heights.append(h)
-        W = 2 * pad + len(HERO) * HERO_PHONE_W + (len(HERO) - 1) * HERO_GAP
-        H = max(heights) + round(pad * 1.9)
-        render(PAGE.format(W=W, H=H, phones=''.join(parts)), out / f'hero-{appearance}.png', W, H)
-
+    for cell, appearance in CELLS:
+        img = raw / f'{cell}-{appearance}.png'
+        if not img.exists():
+            sys.exit(f'missing capture: {img}')
+        pad = round(CELL_W * PAD)
+        html, h = phone(img, cell.split('-')[0], appearance, CELL_W, pad, round(pad * .6))
+        W, H = CELL_W + 2 * pad, h + round(pad * 1.9)
+        render(PAGE.format(W=W, H=H, phones=html), out / f'{cell}-{appearance}.png', W, H)
+    pad = round(HERO_PHONE_W * PAD)
+    parts, heights = [], []
+    for i, (shot, appearance) in enumerate(HERO):
+        img = raw / f'{shot}-{appearance}.png'
+        html, h = phone(img, shot.split('-')[0], appearance, HERO_PHONE_W,
+                        pad + i * (HERO_PHONE_W + HERO_GAP), round(pad * .6))
+        parts.append(html)
+        heights.append(h)
+    W = 2 * pad + len(HERO) * HERO_PHONE_W + (len(HERO) - 1) * HERO_GAP
+    H = max(heights) + round(pad * 1.9)
+    render(PAGE.format(W=W, H=H, phones=''.join(parts)), out / 'hero.png', W, H)
 
 if __name__ == '__main__':
     if not shutil.which('pngquant'):
