@@ -24,6 +24,11 @@ export default defineConfig([
     },
   },
   {
+    // @react-native parses plain JS as ES2015, which rejects `import.meta`.
+    files: ['**/*.mjs'],
+    languageOptions: { ecmaVersion: 'latest' },
+  },
+  {
     ignores: ['node_modules/', 'lib/', 'example/dist/', '**/build/'],
   },
 ]);
